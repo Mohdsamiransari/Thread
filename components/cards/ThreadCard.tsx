@@ -1,6 +1,11 @@
+
 import { formatDateString } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { LikeThread } from "../shared/LikeThread";
+import { fetchUser } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
+import { isLikedThread } from "@/lib/actions/thread.actions";
 
 interface Props {
     id: string;
@@ -22,7 +27,7 @@ interface Props {
     isComment?: boolean;
 }
 
-const ThreadCard = ({
+const ThreadCard = async ({
     id,
     currentUserId,
     parentId,
@@ -33,6 +38,9 @@ const ThreadCard = ({
     comments,
     isComment,
 }: Props) => {
+    const userInfo = await fetchUser(currentUserId)
+    const liked = await isLikedThread(id, userInfo._id);   
+    
     return (
         <article
             className={`flex w-full flex-col rounded-xl  mt-7 ${isComment ? "px-0 xs:px-7" : "bg-dark-2 p-7"
@@ -60,12 +68,10 @@ const ThreadCard = ({
                         <p className="mt-2 text-small-regular text-light-2">{content}</p>
                         <div className="mt-5 flex flex-col gap-3">
                             <div className="flex gap-3.5">
-                                <Image
-                                    src="/assets/heart-gray.svg"
-                                    alt="heart"
-                                    width={24}
-                                    height={24}
-                                    className="cursor-pointer object-contain"
+                                <LikeThread
+                                    threadId={id}
+                                    userId={userInfo._id}
+                                    liked={liked}
                                 />
                                 <Link href={`/thread/${id}`}>
                                     <Image

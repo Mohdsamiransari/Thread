@@ -7,6 +7,7 @@ import { connectToDB } from "../mongoose";
 import User from "../models/user.model";
 import Thread from "../models/thread.model";
 import Community from "../models/community.model";
+import { log } from "console";
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   connectToDB();
@@ -236,5 +237,92 @@ export async function addCommentToThread(
   } catch (err) {
     console.error("Error while adding comment:", err);
     throw new Error("Unable to add comment");
+  }
+}
+
+
+export async function addLikeToThread (
+  threadId: string,
+  userId: string,
+  path: string
+){
+
+  try {
+    
+      const thread = await Thread.findById(threadId);
+      if (!thread) {
+          throw new Error("Thread not found");
+      }
+      // Check if the user has already liked the thread
+      const isLiked = thread.likes.some((like: any) => like.user.toString() === userId);      
+      if(isLiked){
+        throw new Error("already liked");
+        
+      }
+
+      // Add the user to the likes array
+      thread.likes.push({ user: userId });
+      await thread.save();
+      revalidatePath(path);
+  } catch (error: any) {
+    throw new Error(`Error while adding like ${error.message}`);
+    
+  }
+}
+
+
+export async function removeLikeFromThread (
+  threadId : string,
+  userId : string,
+  path: string
+) {
+  try {
+    connectToDB()
+
+    const thread = await Thread.findById(threadId);
+    if(!thread){
+      throw new Error("Thread not found");
+    }
+
+    const  likeIndex = thread.likes.findIndex((like:any)=>like.user.toString() === userId);
+    
+    if(likeIndex === -1){
+      throw new Error("Thread is not liked by the user");
+    }
+    
+    // thread.likes.splice(likeIndex, -1)
+    thread.likes.pop({user: userId})
+    await thread.save()
+    revalidatePath(path);
+    
+  } catch (error :any) {
+    throw new Error(`Error occured while Unlike thread  ${error.message}`);
+    
+    
+  }
+}
+
+export async function isLikedThread (
+  threadId: string,
+  userId: string
+){
+  try{
+    connectToDB();
+
+    const thread = await Thread.findById(threadId)
+    if(!thread){
+      throw new Error("Thread not Found");
+    }
+
+   const likedThread = thread.likes.findIndex((liked: any)=> liked.user.toString() == userId)
+   
+
+   return likedThread !== -1;
+   
+   
+  }
+  catch(error: any){
+    throw new Error("");
+    
   }
 }
