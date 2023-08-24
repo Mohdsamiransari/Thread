@@ -164,7 +164,7 @@ export async function getActivity(userId: string) {
     const childThreadIds = userThreads.reduce((acc, userThread) => {
       return acc.concat(userThread.children);
     }, []);
-
+    
     // Find and return the child threads (replies) excluding the ones created by the same user
     const replies = await Thread.find({
       _id: { $in: childThreadIds },
@@ -174,8 +174,8 @@ export async function getActivity(userId: string) {
       model: User,
       select: "name image _id",
     });
-
-    return replies;
+ 
+    return replies ;
   } catch (error) {
     console.error("Error fetching replies: ", error);
     throw error;
