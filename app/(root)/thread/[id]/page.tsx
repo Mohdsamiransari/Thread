@@ -5,16 +5,16 @@ import { fetchUser } from "@/lib/actions/user.actions";
 import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-const Page = async ({ params }: { params: { id:string } }) => {    
-    if(!params.id) return null;
+const Page = async ({ params }: { params: { id: string } }) => {
+    if (!params.id) return null;
     const user = await currentUser();
-    if(!user) return null;
+    if (!user) return null;
 
     const userInfo = await fetchUser(user.id);
-    if(!userInfo?.onboarded) redirect('/onboarding')
+    if (!userInfo?.onboarded) redirect('/onboarding')
 
     const thread = await fetchThreadById(params.id);
-    
+
 
     return (
         <section className="relative">
@@ -33,16 +33,16 @@ const Page = async ({ params }: { params: { id:string } }) => {
             </div>
 
             <div className="mt-7 ">
-                <Comment 
-                    threadId = {thread._id}
+                <Comment
+                    threadId={thread._id}
                     currentUserId={JSON.stringify(userInfo._id)}
-                    currentUserImg = {userInfo.image}
+                    currentUserImg={userInfo.image}
 
                 />
             </div>
 
             <div className="mt-10">
-                {thread.children.map((childItem: any)=>(
+                {thread.children.map((childItem: any) => (
                     <ThreadCard
                         key={childItem._id}
                         id={childItem._id}
