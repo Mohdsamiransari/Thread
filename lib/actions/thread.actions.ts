@@ -35,7 +35,12 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
         model: User,
         select: "_id name parentId image", // Select only _id and username fields of the author
       },
-    });
+    })
+    .populate({
+      path: "likes",
+      model: User,
+      select :"image name _id"
+    })
 
   // Count the total number of top-level posts (threads) i.e., threads that are not comments.
   const totalPostsCount = await Thread.countDocuments({
@@ -254,14 +259,14 @@ export async function addLikeToThread (
           throw new Error("Thread not found");
       }
       // Check if the user has already liked the thread
-      const isLiked = thread.likes.some((like: any) => like.user.toString() === userId);      
+      const isLiked = thread.likes.some((like: any) => like._id.toString() === userId);      
       if(isLiked){
         throw new Error("already liked");
         
       }
 
       // Add the user to the likes array
-      thread.likes.push({ user: userId });
+      thread.likes.push(userId);
       await thread.save();
       revalidatePath(path);
   } catch (error: any) {
@@ -284,14 +289,14 @@ export async function removeLikeFromThread (
       throw new Error("Thread not found");
     }
 
-    const  likeIndex = thread.likes.findIndex((like:any)=>like.user.toString() === userId);
+    const  likeIndex = thread.likes.findIndex((like:any)=>like.id.toString() === userId);
     
     if(likeIndex === -1){
       throw new Error("Thread is not liked by the user");
     }
     
     // thread.likes.splice(likeIndex, -1)
-    thread.likes.pop({user: userId})
+    thread.likes.pop(userId)
     await thread.save()
     revalidatePath(path);
     
@@ -314,7 +319,7 @@ export async function isLikedThread (
       throw new Error("Thread not Found");
     }
 
-   const likedThread = thread.likes.findIndex((liked: any)=> liked.user.toString() == userId)
+   const likedThread = thread.likes.findIndex((liked: any)=> liked._id.toString() == userId)
    
 
    return likedThread !== -1;
@@ -322,7 +327,7 @@ export async function isLikedThread (
    
   }
   catch(error: any){
-    throw new Error("");
+    throw new Error(`Error while finding liked or Not ${error.message}`);
     
   }
 }
