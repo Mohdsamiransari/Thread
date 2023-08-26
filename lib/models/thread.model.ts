@@ -24,12 +24,17 @@ const threadSchema = new mongoose.Schema({
             ref: 'Thread'
         }
     ],
-    likes: 
+    likes: [
         {
+            user:{
+
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'User',
                 index: true
+            }
         }
+
+    ]
         
     
     

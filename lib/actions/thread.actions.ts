@@ -259,14 +259,14 @@ export async function addLikeToThread (
           throw new Error("Thread not found");
       }
       // Check if the user has already liked the thread
-      const isLiked = thread.likes.some((like: any) => like.id.toString() === userId);      
+      const isLiked = thread.likes.some((like: any) => like.user.toString() === userId);      
       if(isLiked){
         throw new Error("already liked");
         
       }
 
       // Add the user to the likes array
-      thread.likes.push(userId);
+      thread.likes.push({user: userId});
       await thread.save();
       revalidatePath(path);
   } catch (error: any) {
@@ -289,14 +289,14 @@ export async function removeLikeFromThread (
       throw new Error("Thread not found");
     }
 
-    const  likeIndex = thread.likes.findIndex((like:any)=>like.id.toString() == userId);
+    const  likeIndex = thread.likes.findIndex((like:any)=>like.user.toString() == userId);
     
     if(likeIndex === -1){
       throw new Error("Thread is not liked by the user");
     }
     
     // thread.likes.splice(likeIndex, -1)
-    thread.likes.pop(userId)
+    thread.likes.pop({user: userId})
     await thread.save()
     revalidatePath(path);
     
@@ -319,7 +319,7 @@ export async function isLikedThread (
       throw new Error("Thread not Found");
     }
 
-   const likedThread = thread.likes.findIndex((liked: any)=> liked.id.toString() == userId)
+   const likedThread = thread.likes.findIndex((liked: any)=> liked.user.toString() == userId)
    
 
    return likedThread !== -1;
