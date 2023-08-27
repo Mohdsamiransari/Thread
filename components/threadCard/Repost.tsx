@@ -14,12 +14,15 @@ import { Button } from '../ui/button'
 import { repostThread } from '@/lib/actions/thread.actions'
 import { useOrganization } from '@clerk/nextjs'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 
 function Repost({ content, userId }: { content: string, userId: string }) {
     const { organization } = useOrganization()
     const router = useRouter();
     const pathname = usePathname();
+
+    const [dialogOpen, setDialogOpen] = useState(true);
 
 
     const handleRepost = async () => {
@@ -29,8 +32,7 @@ function Repost({ content, userId }: { content: string, userId: string }) {
             communityId: organization ? organization.id : null,
             path: pathname
         })
-
-        
+        setDialogOpen(false); 
     }
     return (
         <Dialog>
@@ -43,14 +45,17 @@ function Repost({ content, userId }: { content: string, userId: string }) {
                     className="cursor-pointer object-contain"
                 />
             </DialogTrigger>
-            <DialogContent>
-                <DialogHeader className='flex flex-row gap-4 items-center'>
-                    <DialogTitle >Are you sure absolutely sure?</DialogTitle>
-                    <DialogDescription >
-                        <Button onClick={handleRepost} className='bg-primary-500' >Repost</Button>
-                    </DialogDescription>
-                </DialogHeader>
-            </DialogContent>
+
+            {dialogOpen && (
+                <DialogContent>
+                    <DialogHeader className='flex flex-row gap-4 items-center'>
+                        <DialogTitle >Are you sure?</DialogTitle>
+                        <DialogDescription >
+                            <Button onClick={handleRepost} className='bg-primary-500' >Repost</Button>
+                        </DialogDescription>
+                    </DialogHeader>
+                </DialogContent>
+            )}
         </Dialog>
     )
 }

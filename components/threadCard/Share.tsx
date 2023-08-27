@@ -39,7 +39,7 @@ function Share({ threadId }: Props) {
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle className="mb-6">Are you sure absolutely sure?</DialogTitle>
+                    <DialogTitle className="mb-6">Are you sure?</DialogTitle>
                     <DialogDescription className="flex flex-row gap-3">
                         <FacebookShareButton
                             url={url}

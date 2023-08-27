@@ -20,7 +20,7 @@ const nextConfig = {
             },
             {
                 protocol:'https',
-                hostname: 'uploadthings.com'
+                hostname: 'uploadthing.com'
             },
             {
                 protocol:'https',
