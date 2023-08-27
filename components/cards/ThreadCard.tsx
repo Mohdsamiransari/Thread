@@ -6,6 +6,8 @@ import LikeThread from "../shared/LikeThread";
 import { fetchUser } from "@/lib/actions/user.actions";
 import { isLikedThread } from "@/lib/actions/thread.actions";
 import Share from "../threadCard/Share";
+import Repost from "../threadCard/Repost";
+import Delete from "../threadCard/Delete";
 
 interface Props {
     id: string;
@@ -82,13 +84,7 @@ const ThreadCard = async ({
                                         className="cursor-pointer object-contain"
                                     />
                                 </Link>
-                                <Image
-                                    src="/assets/repost.svg"
-                                    alt="repost"
-                                    width={24}
-                                    height={24}
-                                    className="cursor-pointer object-contain"
-                                />
+                                <Repost content={content} userId={userInfo._id} />
                                 <Share threadId={id} />
                             </div>
                             {isComment && comments.length > 0 && (
@@ -103,24 +99,30 @@ const ThreadCard = async ({
                 </div>
             </div>
 
-            {/* TODO: Delete Thread  */}
-            {/* TODO: SHow Comment logos */}
+            <div className="flex flex-row gap-2 items-center mt-5 ml-2.5">
 
-            {!isComment && community && (
-                <Link href={`/communities/${community.id}`} className="mt-5 flex items-center">
-                    <p className="text-subtle-medium text-gray-1">
-                        {formatDateString(createdAt)} - {community.name} Community
-                    </p>
-                    <Image
-                        src={community.image}
-                        alt={community.name}
-                        width={14}
-                        height={14}
-                        className="rounded-full ml-1 object-cover"
-                    />
+                {/* TODO: Delete Thread  */}
+                
+                <Delete threadId={id} userId={currentUserId}/>
+                {/* TODO: SHow Comment logos */}
 
-                </Link>
-            )}
+                {!isComment && community && (
+                    <Link href={`/communities/${community.id}`} className=" flex items-center">
+                        <p className="text-subtle-medium text-gray-1">
+                            {formatDateString(createdAt)} - {community.name} Community
+                        </p>
+                        <Image
+                            src={community.image}
+                            alt={community.name}
+                            width={14}
+                            height={14}
+                            className="rounded-full ml-1 object-cover"
+                        />
+
+                    </Link>
+                )}
+            </div>
+
         </article>
     );
 };

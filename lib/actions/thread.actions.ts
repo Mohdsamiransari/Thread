@@ -1,13 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
 import { connectToDB } from "../mongoose";
-
 import User from "../models/user.model";
 import Thread from "../models/thread.model";
 import Community from "../models/community.model";
-
 
 export async function fetchPosts(pageNumber = 1, pageSize = 20) {
   connectToDB();
@@ -39,7 +36,7 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
     .populate({
       path: "likes",
       model: User,
-      select :"image name _id"
+      select: "image name _id"
     })
 
   // Count the total number of top-level posts (threads) i.e., threads that are not comments.
@@ -53,7 +50,6 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
 
   return { posts, isNext };
 }
-
 interface Params {
   text: string,
   author: string,
@@ -61,8 +57,7 @@ interface Params {
   path: string,
 }
 
-export async function createThread({ text, author, communityId, path }: Params
-) {
+export async function createThread({ text, author, communityId, path }: Params) {
   try {
     connectToDB();
 
@@ -245,89 +240,117 @@ export async function addCommentToThread(
   }
 }
 
-
-export async function addLikeToThread (
+export async function addLikeToThread(
   threadId: string,
   userId: string,
   path: string
-){
+) {
 
   try {
-    
-      const thread = await Thread.findById(threadId);
-      if (!thread) {
-          throw new Error("Thread not found");
-      }
-      // Check if the user has already liked the thread
-      const isLiked = thread.likes.some((like: any) => like.user.toString() === userId);      
-      if(isLiked){
-        throw new Error("already liked");
-        
-      }
 
-      // Add the user to the likes array
-      thread.likes.push({user: userId});
-      await thread.save();
-      revalidatePath(path);
+    const thread = await Thread.findById(threadId);
+    if (!thread) {
+      throw new Error("Thread not found");
+    }
+    // Check if the user has already liked the thread
+    const isLiked = thread.likes.some((like: any) => like.user.toString() === userId);
+    if (isLiked) {
+      throw new Error("already liked");
+
+    }
+
+    // Add the user to the likes array
+    thread.likes.push({ user: userId });
+    await thread.save();
+    revalidatePath(path);
   } catch (error: any) {
     throw new Error(`Error while adding like ${error.message}`);
-    
+
   }
 }
 
-
-export async function removeLikeFromThread (
-  threadId : string,
-  userId : string,
+export async function removeLikeFromThread(
+  threadId: string,
+  userId: string,
   path: string
 ) {
   try {
     connectToDB()
 
     const thread = await Thread.findById(threadId);
-    if(!thread){
+    if (!thread) {
       throw new Error("Thread not found");
     }
 
-    const  likeIndex = thread.likes.findIndex((like:any)=>like.user.toString() == userId);
-    
-    if(likeIndex === -1){
+    const likeIndex = thread.likes.findIndex((like: any) => like.user.toString() == userId);
+
+    if (likeIndex === -1) {
       throw new Error("Thread is not liked by the user");
     }
-    
+
     // thread.likes.splice(likeIndex, -1)
-    thread.likes.pop({user: userId})
+    thread.likes.pop({ user: userId })
     await thread.save()
     revalidatePath(path);
-    
-  } catch (error :any) {
+
+  } catch (error: any) {
     throw new Error(`Error occured while Unlike thread  ${error.message}`);
-    
-    
+
+
   }
 }
 
-export async function isLikedThread (
+export async function isLikedThread(
   threadId: string,
   userId: string
-){
-  try{
+) {
+  try {
     connectToDB();
 
     const thread = await Thread.findById(threadId)
-    if(!thread){
+    if (!thread) {
       throw new Error("Thread not Found");
     }
 
-   const likedThread = thread.likes.findIndex((liked: any)=> liked.user.toString() == userId)
-   
+    const likedThread = thread.likes.findIndex((liked: any) => liked.user.toString() == userId)
 
-   return likedThread !== -1;
-   
-   
+
+    return likedThread !== -1;
+
+
   }
-  catch(error: any){
+  catch (error: any) {
     throw new Error(`Error while finding liked or Not ${error.message}`);
-    
+
+  }
+}
+
+export async function repostThread({ text, author, communityId, path }: Params) {
+  try {
+    connectToDB();
+
+    const communityIdObject = await Community.findOne(
+      { id: communityId },
+      { _id: 1 }
+    );
+
+    const repost = await Thread.create({
+      text,
+      author,
+      community: communityIdObject
+    })
+
+    // Update user
+    await User.findByIdAndUpdate(author, { $push: { threads: repost._id } });
+
+    // update community
+    if (communityIdObject) {
+      await Community.findByIdAndUpdate(communityIdObject, { $push: { threads: repost._id } })
+    }
+
+    revalidatePath(path)
+  } catch (error: any) {
+    throw new Error(`Error while reposting thread ${error.message}`);
+
   }
 }

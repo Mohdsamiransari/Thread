@@ -1,7 +1,7 @@
 import { fetchUserPosts } from "@/lib/actions/user.actions";
 import { redirect } from "next/navigation";
 import ThreadCard from "../cards/ThreadCard";
-import {  fetchCommunityPosts } from "@/lib/actions/community.actions";
+import { fetchCommunityPosts } from "@/lib/actions/community.actions";
 
 interface Props {
     currentUserId: string;
@@ -9,19 +9,19 @@ interface Props {
     accountId: string;
 }
 
-const ThreadsTab = async ({currentUserId, accountId, accountType}: Props) => {
+const ThreadsTab = async ({ currentUserId, accountId, accountType }: Props) => {
     let result: any;
-    if(accountType === 'Community') {
+    if (accountType === 'Community') {
         result = await fetchCommunityPosts(accountId)
-    }else(
+    } else (
         result = await fetchUserPosts(accountId)
     )
 
-    if(!result) redirect('/')
+    if (!result) redirect('/')
 
     return (
         <section>
-            {result.threads.map((thread: any)=>(
+            {result.threads.map((thread: any) => (
                 <ThreadCard
                     key={thread._id}
                     id={thread._id}
@@ -29,9 +29,9 @@ const ThreadsTab = async ({currentUserId, accountId, accountType}: Props) => {
                     parentId={thread.parentId}
                     content={thread.text}
                     author={
-                        accountType === 'User' ? 
-                        {name: result.name, image: result.image, id:result.id}:
-                        {name: thread.author.name, image:thread.author.image, id:thread.author.id}
+                        accountType === 'User' ?
+                            { name: result.name, image: result.image, id: result.id } :
+                            { name: thread.author.name, image: thread.author.image, id: thread.author.id }
                     } // todo
                     community={thread.community} // todo
                     createdAt={thread.createdAt}
